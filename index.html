@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Builder Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="app" class="container mx-auto py-10">
+        <h1 class="text-4xl font-bold text-center mb-10 text-blue-600">CV Maker Database</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-bold mb-4">Isi Data CV</h2>
+                <input v-model="form.nama" placeholder="Nama Lengkap" class="w-full border p-2 mb-3 rounded">
+                <input v-model="form.email" placeholder="Email" class="w-full border p-2 mb-3 rounded">
+                <textarea v-model="form.pengalaman" placeholder="Pengalaman (Gunakan koma)" class="w-full border p-2 mb-3 rounded"></textarea>
+                
+                <label class="block mb-2 font-semibold">Pilih Template:</label>
+                <select v-model="form.template" class="w-full border p-2 mb-5">
+                    <option value="modern">Modern Blue</option>
+                    <option value="dark">Elegant Dark</option>
+                </select>
+
+                <button @click="simpanData" :disabled="loading" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+                    {{ loading ? 'Menyimpan...' : 'Simpan ke Google Sheets' }}
+                </button>
+            </div>
+
+            <div :class="['p-8 rounded-lg shadow-lg', form.template === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800']">
+                <h2 class="text-3xl font-bold border-b-2 pb-2" :class="form.template === 'dark' ? 'border-gray-600' : 'border-blue-500'">
+                    {{ form.nama || 'Nama Anda' }}
+                </h2>
+                <p class="mt-2 text-sm">{{ form.email || 'email@contoh.com' }}</p>
+                
+                <div class="mt-6">
+                    <h3 class="font-bold uppercase tracking-wider">Pengalaman</h3>
+                    <p class="mt-2 text-sm leading-relaxed">{{ form.pengalaman || 'Detail pengalaman kerja...' }}</p>
+                </div>
+                
+                <button onclick="window.print()" class="mt-10 bg-blue-500 text-white px-4 py-2 rounded no-print">Cetak PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+        createApp({
+            data() {
+                return {
+                    loading: false,
+                    form: { nama: '', email: '', pengalaman: '', template: 'modern' },
+                    apiUrl: 'MASUKKAN_URL_SHEETDB_DISINI' // Ganti dengan URL SheetDB kamu
+                }
+            },
+            methods: {
+                async simpanData() {
+                    if(!this.form.nama) return alert('Nama wajib diisi');
+                    this.loading = true;
+                    try {
+                        await axios.post(this.apiUrl, { data: [this.form] });
+                        alert('Data berhasil masuk ke Google Sheets!');
+                    } catch (e) {
+                        alert('Gagal simpan data');
+                    } finally { this.loading = false; }
+                }
+            }
+        }).mount('#app')
+    </script>
+    
+    <style>
+        @media print { .no-print { display: none; } }
+    </style>
+</body>
+</html>
