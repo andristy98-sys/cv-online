@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Builder Pro - Cyber Edition</title>
+    <title>CV Builder Pro - Universal Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -35,6 +35,10 @@
                     <div class="space-y-4">
                         <label class="block text-xs font-bold text-gray-500 uppercase">Identitas & Kontak</label>
                         <input v-model="form.nama" placeholder="Nama Lengkap" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        
+                        <!-- KOLOM BARU: HEADLINE -->
+                        <input v-model="form.headline" placeholder="Headline (Contoh: Admin Gudang / Marketing)" class="w-full border p-2 rounded text-sm bg-yellow-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                        
                         <input v-model="form.email" placeholder="Alamat Email" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                         <input v-model="form.telp" placeholder="Nomor WA" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                         <input v-model="form.alamat" placeholder="Alamat Lengkap" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -50,7 +54,7 @@
                         <textarea v-model="form.pengalaman" rows="4" placeholder="Detail Pekerjaan & Tahun..." class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                         
                         <label class="block text-xs font-bold text-gray-500 uppercase">Keahlian (Pisah dengan koma)</label>
-                        <textarea v-model="form.skill" rows="2" placeholder="Cisco, Linux, Security..." class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        <textarea v-model="form.skill" rows="2" placeholder="Contoh: Microsoft Office, Manajemen, Leadership" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
 
                         <button @click="simpanData" :disabled="loading" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md">
                             {{ loading ? '⏳ Menyimpan...' : '💾 Simpan Data' }}
@@ -100,7 +104,11 @@
                             <div class="mb-10">
                                 <h1 class="text-5xl font-black text-gray-800 uppercase leading-none">{{ form.nama ? form.nama.split(' ')[0] : 'NAMA' }}</h1>
                                 <h2 class="text-4xl font-light text-gray-600 uppercase">{{ form.nama ? form.nama.split(' ').slice(1).join(' ') : 'ANDA' }}</h2>
-                                <p class="text-blue-600 font-bold mt-2 tracking-[0.2em] text-[10px] italic uppercase">IT, HARDWARE, SOFTWARE JARINGAN & SECURITY</p>
+                                
+                                <!-- OUTPUT HEADLINE DINAMIS -->
+                                <p class="text-blue-600 font-bold mt-2 tracking-[0.2em] text-[10px] italic uppercase">
+                                    {{ form.headline || 'BIDANG KERJA / HEADLINE' }}
+                                </p>
                             </div>
 
                             <div class="space-y-8">
@@ -133,7 +141,7 @@
                 return {
                     loading: false,
                     form: {
-                        nama: '', email: '', telp: '', alamat: '', foto: '',
+                        nama: '', headline: '', email: '', telp: '', alamat: '', foto: '',
                         tentang: '', pendidikan: '', pengalaman: '', skill: '',
                         template: 'cyber'
                     },
