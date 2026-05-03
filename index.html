@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Builder Pro - Cyber Design Edition</title>
+    <title>CV Builder Pro - Custom Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -15,14 +15,13 @@
             .no-print { display: none !important; }
             .container { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
             body { background: white !important; }
-            .cv-preview { box-shadow: none !important; border: none !important; width: 210mm; height: 297mm; }
+            .cv-preview { box-shadow: none !important; border: none !important; width: 210mm; }
         }
-        /* Aksen Garis Emas seperti di gambar */
         .gold-line {
             height: 4px;
             background: linear-gradient(90deg, #d4af37 0%, #f9e29d 50%, #d4af37 100%);
         }
-        .cyber-bg { background-color: #23292f; } /* Warna navy gelap sesuai gambar */
+        .cyber-bg { background-color: #23292f; }
     </style>
 </head>
 <body class="bg-gray-200">
@@ -31,28 +30,30 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- INPUT PANEL -->
             <div class="lg:col-span-4 space-y-6 no-print">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-600">
                     <h2 class="text-xl font-bold mb-4 text-blue-700">⚙️ Pengaturan CV</h2>
                     <div class="space-y-4">
-                        <input v-model="form.nama" placeholder="Nama Lengkap" class="w-full border p-2 rounded">
-                        <input v-model="form.email" placeholder="Email" class="w-full border p-2 rounded">
-                        <input v-model="form.telp" placeholder="Nomor WhatsApp" class="w-full border p-2 rounded">
-                        <input v-model="form.alamat" placeholder="Alamat" class="w-full border p-2 rounded">
-                        <input v-model="form.foto" placeholder="Link URL Foto (Lingkaran)" class="w-full border p-2 rounded">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Identitas Diri</label>
+                        <input v-model="form.nama" placeholder="Nama Lengkap" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input v-model="form.email" placeholder="Alamat Email" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input v-model="form.telp" placeholder="Nomor Telepon/WA" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input v-model="form.alamat" placeholder="Alamat Lengkap" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input v-model="form.foto" placeholder="URL Link Foto (Gunakan link gambar)" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                         
-                        <textarea v-model="form.pengalaman" rows="5" placeholder="Pengalaman Kerja & Detail..." class="w-full border p-2 rounded text-sm"></textarea>
-                        <textarea v-model="form.skill" rows="3" placeholder="Keahlian (pisahkan dengan koma)" class="w-full border p-2 rounded text-sm"></textarea>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Tentang Saya</label>
+                        <textarea v-model="form.tentang" rows="3" placeholder="Jelaskan profil singkat Anda..." class="w-full border p-2 rounded text-sm bg-blue-50 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Pengalaman Kerja</label>
+                        <textarea v-model="form.pengalaman" rows="5" placeholder="Detail Pekerjaan & Tahun..." class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Keahlian (Pisah dengan koma)</label>
+                        <textarea v-model="form.skill" rows="3" placeholder="Contoh: Networking, Security, Linux" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
 
-                        <select v-model="form.template" class="w-full border p-2 rounded bg-yellow-50 font-bold">
-                            <option value="cyber">Cyber Security Gold (Sesuai Gambar)</option>
-                            <option value="modern">Modern Minimalist</option>
-                        </select>
-
-                        <button @click="simpanData" :disabled="loading" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md">
-                            {{ loading ? 'Menyimpan...' : '💾 Simpan ke Sheets' }}
+                        <button @click="simpanData" :disabled="loading" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md transition duration-200">
+                            {{ loading ? '⏳ Proses Menyimpan...' : '💾 Simpan Data CV' }}
                         </button>
-                        <button onclick="window.print()" class="w-full bg-gray-800 text-white py-2 rounded-lg font-bold">
-                            🖨️ Cetak PDF
+                        <button onclick="window.print()" class="w-full bg-gray-800 text-white py-2 rounded-lg font-bold hover:bg-black transition duration-200">
+                            🖨️ Download / Print PDF
                         </button>
                     </div>
                 </div>
@@ -60,27 +61,24 @@
 
             <!-- PREVIEW PANEL -->
             <div class="lg:col-span-8 flex justify-center">
-                <div id="cv-render" class="cv-preview bg-white shadow-2xl w-full max-w-[800px] min-h-[1100px] overflow-hidden">
+                <div id="cv-render" class="cv-preview bg-white shadow-2xl w-full max-w-[800px] min-h-[1100px] overflow-hidden border">
                     
-                    <!-- TEMPLATE: CYBER GOLD (Based on Image) -->
-                    <div v-if="form.template === 'cyber'" class="flex h-full min-h-[1100px]">
-                        <!-- Sidebar Kiri (Gelap) -->
+                    <div class="flex h-full min-h-[1100px]">
+                        <!-- Sidebar Kiri -->
                         <div class="w-1/3 cyber-bg text-white p-6 flex flex-col items-center">
-                            <!-- Foto Lingkaran dengan border emas -->
-                            <div class="w-40 h-40 rounded-full border-4 border-[#d4af37] overflow-hidden mb-6 mt-4">
-                                <img :src="form.foto || 'https://via.placeholder.com/150'" class="w-full h-full object-cover">
+                            <div class="w-40 h-40 rounded-full border-4 border-[#d4af37] overflow-hidden mb-6 mt-4 bg-gray-700 flex items-center justify-center">
+                                <img v-if="form.foto" :src="form.foto" class="w-full h-full object-cover">
+                                <span v-else class="text-xs text-gray-400">FOTO</span>
                             </div>
-
                             <div class="w-full space-y-8">
                                 <div>
-                                    <h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-3 uppercase tracking-wider">Kontak</h3>
-                                    <p class="text-xs break-all mb-2">📞 {{ form.telp || '-' }}</p>
-                                    <p class="text-xs break-all mb-2">📧 {{ form.email || '-' }}</p>
-                                    <p class="text-xs italic">{{ form.alamat || '-' }}</p>
+                                    <h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-3 uppercase tracking-wider text-sm">Kontak</h3>
+                                    <p class="text-[10px] break-all mb-2">📞 {{ form.telp || '-' }}</p>
+                                    <p class="text-[10px] break-all mb-2">📧 {{ form.email || '-' }}</p>
+                                    <p class="text-[10px] italic">{{ form.alamat || '-' }}</p>
                                 </div>
-
                                 <div>
-                                    <h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-3 uppercase tracking-wider">Kemampuan</h3>
+                                    <h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-3 uppercase tracking-wider text-sm">Kemampuan</h3>
                                     <ul class="text-[10px] space-y-2 list-disc pl-4">
                                         <li v-for="s in (form.skill ? form.skill.split(',') : [])">{{ s.trim() }}</li>
                                     </ul>
@@ -89,41 +87,30 @@
                         </div>
 
                         <!-- Konten Kanan -->
-                        <div class="w-2/3 p-10 relative">
-                            <!-- Garis Emas Atas -->
+                        <div class="w-2/3 p-10 relative bg-white">
                             <div class="gold-line w-32 absolute top-10 right-0"></div>
-                            <div class="gold-line w-24 absolute top-14 right-0 opacity-50"></div>
-
                             <div class="mb-10">
-                                <h1 class="text-5xl font-black text-gray-800 uppercase leading-none">{{ form.nama.split(' ')[0] || 'NAMA' }}</h1>
-                                <h2 class="text-4xl font-light text-gray-600 uppercase">{{ form.nama.split(' ').slice(1).join(' ') || 'ANDA' }}</h2>
-                                <p class="text-blue-600 font-bold mt-2 tracking-[0.2em] text-sm italic">IT, HARDWARE, SOFTWARE JARINGAN & SECURITY</p>
+                                <h1 class="text-5xl font-black text-gray-800 uppercase leading-none">{{ form.nama ? form.nama.split(' ')[0] : 'NAMA' }}</h1>
+                                <h2 class="text-4xl font-light text-gray-600 uppercase">{{ form.nama ? form.nama.split(' ').slice(1).join(' ') : 'ANDA' }}</h2>
+                                <p class="text-blue-600 font-bold mt-2 tracking-[0.2em] text-[10px] italic uppercase">PROFESSIONAL RESUME</p>
                             </div>
 
                             <div class="space-y-8">
                                 <div>
-                                    <h3 class="font-bold text-xl text-gray-800 border-l-8 border-gray-800 pl-3 mb-3">TENTANG SAYA</h3>
-                                    <p class="text-sm text-gray-600 leading-relaxed text-justify">
-                                        Saya adalah profesional IT yang fokus pada pengembangan infrastruktur jaringan dan keamanan sistem. Memiliki kemampuan analisis yang kuat dan siap bekerja di bawah tekanan.
+                                    <h3 class="font-bold text-lg text-gray-800 border-l-8 border-gray-800 pl-3 mb-3 uppercase tracking-tighter">Tentang Saya</h3>
+                                    <p class="text-xs text-gray-600 leading-relaxed text-justify whitespace-pre-line">
+                                        {{ form.tentang || 'Ringkasan profesional Anda akan muncul di sini...' }}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h3 class="font-bold text-xl text-gray-800 border-l-8 border-gray-800 pl-3 mb-3">PENGALAMAN KERJA</h3>
-                                    <div class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                                        {{ form.pengalaman || 'Isi detail pengalaman kerja Anda di sini...' }}
+                                    <h3 class="font-bold text-lg text-gray-800 border-l-8 border-gray-800 pl-3 mb-3 uppercase tracking-tighter">Pengalaman Kerja</h3>
+                                    <div class="text-xs text-gray-700 whitespace-pre-line leading-relaxed">
+                                        {{ form.pengalaman || 'Riwayat pekerjaan Anda akan muncul di sini...' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- TEMPLATE MODERN (BACKUP) -->
-                    <div v-else class="p-10">
-                        <h1 class="text-3xl font-bold">{{ form.nama }}</h1>
-                        <p>{{ form.email }}</p>
-                        <hr class="my-4">
-                        <p class="whitespace-pre-line">{{ form.pengalaman }}</p>
                     </div>
 
                 </div>
@@ -138,26 +125,29 @@
                 return {
                     loading: false,
                     form: {
-                        nama: 'ANDRI SETIAWAN',
-                        email: 'andriwawansetyawan@gmail.com',
-                        telp: '0895347770070',
-                        alamat: 'Sukoharjo, Jawa Tengah',
-                        pengalaman: 'PT Sri Rejeki Isman Tbk\n1. Network Engineer (2017-2025)\nBertanggung jawab atas konfigurasi WAN, Router, DHCP, dan DNS.',
-                        skill: 'Leadership, Berpikir Kritis, Cisco Configuration, Windows Server, Linux System, IT Security',
-                        foto: 'https://andristy98-sys.github.io/cv-online/image_6c119b.png', // Ganti dengan link foto aslimu
+                        nama: '',
+                        email: '',
+                        telp: '',
+                        alamat: '',
+                        tentang: '',
+                        pengalaman: '',
+                        skill: '',
+                        foto: '',
                         template: 'cyber'
                     },
+                    // Pastikan URL SheetDB ini aktif di akun Anda
                     apiUrl: 'https://sheetdb.io/api/v1/ui9iq17k5b4rj'
                 }
             },
             methods: {
                 async simpanData() {
+                    if(!this.form.nama) return alert('Wajib isi Nama minimal ya bro!');
                     this.loading = true;
                     try {
                         await axios.post(this.apiUrl, { data: [this.form] });
-                        alert('Data masuk ke Google Sheets!');
+                        alert('Data Berhasil Disimpan ke Cloud!');
                     } catch (e) {
-                        alert('Gagal simpan!');
+                        alert('Gagal menyimpan, cek URL API atau Koneksi.');
                     } finally { this.loading = false; }
                 }
             }
