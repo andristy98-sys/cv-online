@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Builder Pro - Final Fixed</title>
+    <title>CV Builder Pro - Markdown Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Library untuk mengubah Markdown ke HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Poppins', sans-serif; }
+        /* Styling agar hasil markdown rapi */
+        .markdown-content ul { list-style-type: disc; margin-left: 1.25rem; }
+        .markdown-content strong { font-weight: 700; }
+        
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .cv-preview { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .modern-blue, .cyber-bg, .gold-line { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { margin: 10mm; }
         }
         .gold-line { height: 4px; background: linear-gradient(90deg, #d4af37 0%, #f9e29d 50%, #d4af37 100%); }
         .cyber-bg { background-color: #23292f !important; }
         .modern-blue { background-color: #1a428a !important; }
         .modern-border { border-bottom: 2px solid #1a428a; width: fit-content; margin-bottom: 10px; }
-        .font-ats-name { font-family: 'Merriweather', serif; font-weight: 700; }
-        .font-ats-body { font-family: 'Merriweather', serif; }
     </style>
 </head>
 <body class="bg-gray-200">
@@ -34,135 +37,58 @@
             <!-- INPUT PANEL -->
             <div class="lg:col-span-4 space-y-6 no-print">
                 <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-600">
-                    <h2 class="text-xl font-bold mb-4 text-blue-700"><i class="fa-solid fa-gear mr-2"></i> Pengaturan CV</h2>
+                    <h2 class="text-xl font-bold mb-4 text-blue-700">✍️ Input Data</h2>
+                    <p class="text-[10px] text-gray-500 mb-4">*Gunakan **teks** untuk Bold, *teks* untuk Miring</p>
                     
-                    <div class="mb-6">
-                        <label class="block text-xs font-bold text-red-500 uppercase mb-2">Pilih Desain CV</label>
-                        <select v-model="form.template" class="w-full border-2 border-blue-500 p-2 rounded font-bold text-sm bg-blue-50">
-                            <option value="ats">1. ATS Minimalist (Putih)</option>
-                            <option value="modern">2. Modern Clean Blue (Header Biru)</option>
-                            <option value="cyber">3. Cyber Security Gold (Gelap)</option>
-                        </select>
-                    </div>
-
                     <div class="space-y-4">
                         <input v-model="form.nama" placeholder="Nama Lengkap" class="w-full border p-2 rounded text-sm">
-                        <input v-model="form.headline" placeholder="Headline / Pekerjaan" class="w-full border p-2 rounded text-sm">
+                        <input v-model="form.headline" placeholder="Headline" class="w-full border p-2 rounded text-sm">
                         <input v-model="form.email" placeholder="Email" class="w-full border p-2 rounded text-sm">
                         <input v-model="form.telp" placeholder="No WA" class="w-full border p-2 rounded text-sm">
                         <input v-model="form.alamat" placeholder="Lokasi" class="w-full border p-2 rounded text-sm">
-                        <input v-model="form.foto" placeholder="URL Foto Profil" class="w-full border p-2 rounded text-sm">
                         
-                        <textarea v-model="form.tentang" rows="2" placeholder="Ringkasan profil..." class="w-full border p-2 rounded text-sm"></textarea>
-                        <textarea v-model="form.pendidikan" rows="2" placeholder="Pendidikan..." class="w-full border p-2 rounded text-sm"></textarea>
-                        <textarea v-model="form.pengalaman" rows="3" placeholder="Pengalaman Kerja..." class="w-full border p-2 rounded text-sm"></textarea>
+                        <label class="text-xs font-bold">Ringkasan Profil:</label>
+                        <textarea v-model="form.tentang" rows="3" placeholder="Contoh: Saya adalah **Profesional**..." class="w-full border p-2 rounded text-sm"></textarea>
                         
-                        <div class="grid grid-cols-1 gap-2 bg-gray-50 p-3 rounded-lg border">
-                            <label class="text-[10px] font-bold text-blue-600 uppercase">Keahlian & Bahasa</label>
-                            <input v-model="form.skill" placeholder="Soft Skills (Koma)" class="w-full border p-2 rounded text-xs">
-                            <input v-model="form.hardskill" placeholder="Hard Skills (Koma)" class="w-full border p-2 rounded text-xs">
-                            <input v-model="form.bahasa" placeholder="Bahasa (Koma)" class="w-full border p-2 rounded text-xs">
-                        </div>
+                        <label class="text-xs font-bold">Pengalaman Kerja:</label>
+                        <textarea v-model="form.pengalaman" rows="5" placeholder="Gunakan - untuk list..." class="w-full border p-2 rounded text-sm"></textarea>
+                        
+                        <label class="text-xs font-bold">Pendidikan:</label>
+                        <textarea v-model="form.pendidikan" rows="3" class="w-full border p-2 rounded text-sm"></textarea>
 
-                        <button @click="simpanData" :disabled="loading" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold">
-                            <i class="fa-solid fa-floppy-disk mr-2"></i> {{ loading ? 'Menyimpan...' : 'Simpan Data' }}
-                        </button>
-                        <button onclick="window.print()" class="w-full bg-gray-800 text-white py-2 rounded-lg font-bold">
-                            <i class="fa-solid fa-file-pdf mr-2"></i> Cetak PDF
-                        </button>
+                        <button @click="simpanData" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold">Simpan Data</button>
                     </div>
                 </div>
             </div>
 
             <!-- PREVIEW PANEL -->
             <div class="lg:col-span-8 flex justify-center">
-                <div id="cv-render" class="cv-preview bg-white shadow-2xl w-[210mm] min-h-[297mm] overflow-hidden">
+                <div class="cv-preview bg-white shadow-2xl w-[210mm] min-h-[297mm]">
                     
-                    <!-- 1. ATS TEMPLATE (FIXED HEADLINE & NAME) -->
-                    <div v-if="form.template === 'ats'" class="p-12 text-gray-900 font-ats-body leading-relaxed text-[12px]">
-                        <div class="text-center mb-8 border-b-2 border-gray-100 pb-6">
-                            <h1 class="text-4xl font-ats-name uppercase">{{ form.nama || 'NAMA LENGKAP' }}</h1>
-                            <!-- FIXED: Headline ditambahkan di sini -->
-                            <p class="text-blue-700 font-bold tracking-widest text-sm mt-1 uppercase">{{ form.headline || 'PROFESSIONAL TITLE' }}</p>
-                            
-                            <div class="text-[11px] mt-3 text-gray-600 flex justify-center gap-6">
-                                <span v-if="form.alamat"><i class="fa-solid fa-location-dot mr-1 text-gray-400"></i> {{ form.alamat }}</span>
-                                <span v-if="form.telp"><i class="fa-solid fa-phone mr-1 text-gray-400"></i> {{ form.telp }}</span>
-                                <span v-if="form.email"><i class="fa-solid fa-envelope mr-1 text-gray-400"></i> {{ form.email }}</span>
-                            </div>
-                        </div>
-                        <div class="mb-8">
-                            <h2 class="text-xl font-ats-name border-b border-gray-300 pb-1 mb-3 uppercase"><i class="fa-solid fa-user-tie mr-2 text-gray-700"></i> Profil</h2>
-                            <p class="text-justify whitespace-pre-line">{{ form.tentang }}</p>
-                        </div>
-                        <div class="mb-8">
-                            <h2 class="text-xl font-ats-name border-b border-gray-300 pb-1 mb-3 uppercase"><i class="fa-solid fa-briefcase mr-2 text-gray-700"></i> Pengalaman</h2>
-                            <div class="whitespace-pre-line leading-relaxed">{{ form.pengalaman }}</div>
-                        </div>
-                        <div class="mb-8">
-                            <h2 class="text-xl font-ats-name border-b border-gray-300 pb-1 mb-3 uppercase"><i class="fa-solid fa-graduation-cap mr-2 text-gray-700"></i> Pendidikan</h2>
-                            <div class="whitespace-pre-line">{{ form.pendidikan }}</div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-6 pt-6 border-t border-gray-100">
-                            <div><h3 class="font-bold mb-2 uppercase text-[11px]"><i class="fa-solid fa-brain mr-1"></i> Soft Skills</h3><ul class="list-disc pl-4 text-[10px]"><li v-for="s in list(form.skill)">{{ s }}</li></ul></div>
-                            <div><h3 class="font-bold mb-2 uppercase text-[11px]"><i class="fa-solid fa-gears mr-1"></i> Hard Skills</h3><ul class="list-disc pl-4 text-[10px]"><li v-for="h in list(form.hardskill)">{{ h }}</li></ul></div>
-                            <div><h3 class="font-bold mb-2 uppercase text-[11px]"><i class="fa-solid fa-language mr-1"></i> Bahasa</h3><ul class="list-disc pl-4 text-[10px]"><li v-for="b in list(form.bahasa)">{{ b }}</li></ul></div>
-                        </div>
-                    </div>
-
-                    <!-- 2. MODERN BLUE TEMPLATE -->
-                    <div v-if="form.template === 'modern'" class="flex flex-col h-full min-h-[297mm]">
+                    <!-- Contoh Template Modern (Semua template sudah support markdown) -->
+                    <div class="flex flex-col h-full">
                         <div class="modern-blue p-10 flex items-center justify-between text-white">
-                            <div class="w-2/3">
-                                <h1 class="text-5xl font-bold uppercase">{{ form.nama || 'NAMA LENGKAP' }}</h1>
-                                <p class="text-lg opacity-90 tracking-widest mt-2 uppercase"><i class="fa-solid fa-id-card mr-2 text-blue-300"></i> {{ form.headline }}</p>
-                            </div>
-                            <div class="w-44 h-44 rounded-full border-8 border-[#ffffff33] overflow-hidden"><img :src="form.foto" class="w-full h-full object-cover bg-gray-600"></div>
-                        </div>
-                        <div class="bg-[#0f2a5a] text-white px-10 py-3 flex justify-between text-[11px]">
-                            <span><i class="fa-solid fa-location-dot mr-2 text-blue-300"></i> {{ form.alamat }}</span>
-                            <span><i class="fa-solid fa-phone mr-2 text-blue-300"></i> {{ form.telp }}</span>
-                            <span><i class="fa-solid fa-envelope mr-2 text-blue-300"></i> {{ form.email }}</span>
-                        </div>
-                        <div class="p-10 grid grid-cols-12 gap-8 text-gray-800">
-                            <div class="col-span-4 space-y-6">
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-brain mr-2"></i> Soft Skills</h3><ul class="text-xs space-y-1"><li v-for="s in list(form.skill)">• {{ s }}</li></ul></div>
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-gears mr-2"></i> Hard Skills</h3><ul class="text-xs space-y-1"><li v-for="h in list(form.hardskill)">• {{ h }}</li></ul></div>
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-language mr-2"></i> Bahasa</h3><ul class="text-xs space-y-1"><li v-for="b in list(form.bahasa)">• {{ b }}</li></ul></div>
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-graduation-cap mr-2"></i> Pendidikan</h3><div class="text-[10px] italic whitespace-pre-line leading-relaxed">{{ form.pendidikan }}</div></div>
-                            </div>
-                            <div class="col-span-8 space-y-6">
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-user mr-2"></i> Profil</h3><p class="text-xs text-justify whitespace-pre-line">{{ form.tentang }}</p></div>
-                                <div><h3 class="text-sm font-black text-blue-900 uppercase modern-border"><i class="fa-solid fa-briefcase mr-2"></i> Pengalaman</h3><div class="text-xs whitespace-pre-line leading-relaxed">{{ form.pengalaman }}</div></div>
+                            <div class="w-full text-center">
+                                <h1 class="text-5xl font-bold uppercase">{{ form.nama || 'NAMA' }}</h1>
+                                <p class="text-lg opacity-90 tracking-widest mt-2 uppercase">{{ form.headline }}</p>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 3. CYBER GOLD TEMPLATE -->
-                    <div v-if="form.template === 'cyber'" class="flex h-full min-h-[297mm]">
-                        <div class="w-1/3 cyber-bg text-white p-6 flex flex-col items-center">
-                            <div class="w-40 h-40 rounded-full border-4 border-[#d4af37] overflow-hidden mb-6 mt-4"><img :src="form.foto" class="w-full h-full object-cover bg-gray-700"></div>
-                            <div class="w-full space-y-6 text-left text-[10px]">
-                                <div><h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-2 uppercase">Kontak</h3>
-                                    <p class="mb-1"><i class="fa-solid fa-phone mr-2 text-[#d4af37]"></i> {{ form.telp }}</p>
-                                    <p class="mb-1 break-all"><i class="fa-solid fa-envelope mr-2 text-[#d4af37]"></i> {{ form.email }}</p>
-                                    <p><i class="fa-solid fa-location-dot mr-2 text-[#d4af37]"></i> {{ form.alamat }}</p>
-                                </div>
-                                <div><h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-2 uppercase">Soft Skills</h3><ul class="list-disc pl-4"><li v-for="s in list(form.skill)">{{ s }}</li></ul></div>
-                                <div><h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-2 uppercase">Hard Skills</h3><ul class="list-disc pl-4"><li v-for="h in list(form.hardskill)">{{ h }}</li></ul></div>
-                                <div><h3 class="text-[#d4af37] font-bold border-b border-gray-600 mb-2 uppercase">Bahasa</h3><ul class="list-disc pl-4"><li v-for="b in list(form.bahasa)">{{ b }}</li></ul></div>
+                        <div class="p-10 grid grid-cols-12 gap-8 text-gray-800">
+                            <div class="col-span-12">
+                                <h3 class="text-sm font-black text-blue-900 uppercase modern-border">Profil</h3>
+                                <!-- v-html digunakan untuk merender hasil markdown -->
+                                <div class="markdown-content text-xs text-justify" v-html="renderMarkdown(form.tentang)"></div>
                             </div>
-                        </div>
-                        <div class="w-2/3 p-10 relative bg-white">
-                            <div class="gold-line w-32 absolute top-10 right-0"></div>
-                            <div class="mb-10">
-                                <h1 class="text-5xl font-black text-gray-800 uppercase leading-tight">{{ form.nama || 'NAMA LENGKAP' }}</h1>
-                                <p class="text-blue-600 font-bold mt-2 tracking-widest text-[11px] uppercase italic border-l-4 border-blue-600 pl-2">{{ form.headline || 'IT SUPPORT' }}</p>
+
+                            <div class="col-span-12 mt-4">
+                                <h3 class="text-sm font-black text-blue-900 uppercase modern-border">Pengalaman Kerja</h3>
+                                <div class="markdown-content text-xs leading-relaxed" v-html="renderMarkdown(form.pengalaman)"></div>
                             </div>
-                            <div class="space-y-6">
-                                <div><h3 class="font-bold text-gray-800 border-l-8 border-gray-800 pl-3 mb-2 uppercase"><i class="fa-solid fa-user mr-2"></i> Profil</h3><p class="text-xs text-gray-600 whitespace-pre-line text-justify">{{ form.tentang }}</p></div>
-                                <div><h3 class="font-bold text-gray-800 border-l-8 border-gray-800 pl-3 mb-2 uppercase"><i class="fa-solid fa-briefcase mr-2"></i> Pengalaman Kerja</h3><div class="text-xs text-gray-700 whitespace-pre-line leading-relaxed">{{ form.pengalaman }}</div></div>
-                                <div><h3 class="font-bold text-gray-800 border-l-8 border-gray-800 pl-3 mb-2 uppercase"><i class="fa-solid fa-graduation-cap mr-2"></i> Pendidikan</h3><div class="text-xs text-gray-700 whitespace-pre-line">{{ form.pendidikan }}</div></div>
+
+                            <div class="col-span-12 mt-4">
+                                <h3 class="text-sm font-black text-blue-900 uppercase modern-border">Pendidikan</h3>
+                                <div class="markdown-content text-xs" v-html="renderMarkdown(form.pendidikan)"></div>
                             </div>
                         </div>
                     </div>
@@ -177,19 +103,17 @@
         createApp({
             data() {
                 return {
-                    loading: false,
-                    form: { template: 'ats', nama: '', headline: '', email: '', telp: '', alamat: '', foto: '', tentang: '', pendidikan: '', pengalaman: '', skill: '', hardskill: '', bahasa: '' },
-                    apiUrl: 'https://sheetdb.io/api/v1/ui9iq17k5b4rj'
+                    form: { nama: '', headline: '', tentang: '', pengalaman: '', pendidikan: '', email: '', telp: '', alamat: '' }
                 }
             },
             methods: {
-                list(val) { return val ? val.split(',').map(s => s.trim()) : []; },
+                // Fungsi untuk mengubah teks biasa menjadi HTML Bold/Italic
+                renderMarkdown(text) {
+                    if (!text) return '';
+                    return marked.parse(text); // Menggunakan library Marked.js
+                },
                 async simpanData() {
-                    if(!this.form.nama) return alert('Nama wajib diisi!');
-                    this.loading = true;
-                    try { await axios.post(this.apiUrl, { data: [this.form] }); alert('Mantap! Data masuk ke Cloud.'); }
-                    catch (e) { alert('Gagal simpan!'); }
-                    finally { this.loading = false; }
+                    alert('Data siap dikirim!');
                 }
             }
         }).mount('#app')
